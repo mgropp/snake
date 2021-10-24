@@ -1,1 +1,2 @@
-# snake
+# Snake
+Vorlage für eine Übungsaufgabe
