@@ -1,11 +1,14 @@
 import pygame
 import random
-from typing import Optional, List, Tuple
+from typing import Optional, List, Tuple, Type
 import time
 
 TILE_SIZE = 20
-SNAKE_HEAD = (50, 205, 50)
-SNAKE_BODY = (40, 195, 40)
+SNAKE_HEAD_COLOR = (60, 215, 60)
+SNAKE_BODY_COLOR = (40, 195, 40)
+BRICK_COLOR = 200, 200, 200
+CHERRY_COLOR = (200, 0, 0)
+BACKGROUND_COLOR = (30, 30, 30)
 
 RIGHT = (1, 0)
 LEFT = (-1, 0)
@@ -37,7 +40,7 @@ class Brick(Item):
 
     def draw(self, surface: pygame.Surface) -> None:
         pygame.draw.rect(surface,
-                         (230, 230, 230),
+                         BRICK_COLOR,
                          [TILE_SIZE * self._x,
                           TILE_SIZE * self._y,
                           TILE_SIZE,
@@ -45,13 +48,48 @@ class Brick(Item):
                          )
 
 
+class Cherry(Item):
+    def __init__(self) -> None:
+        super().__init__(0, 0)
+
+    def draw(self, surface: pygame.Surface) -> None:
+        pygame.draw.rect(surface,
+                         CHERRY_COLOR,
+                         [TILE_SIZE * self._x,
+                          TILE_SIZE * self._y,
+                          TILE_SIZE,
+                          TILE_SIZE]
+                         )
+
+    def move(self, snake, wall: list[tuple[int, int]], width: int, height: int, ) -> None:
+        occupied = True
+
+        while occupied:
+            x = random.randint(0, width)
+            y = random.randint(0, height)
+            if snake.occupies(x, y):
+                occupied = True
+            else:
+                for brick in wall:
+                    if brick.occupies(x, y):
+                        occupied = True
+                        break
+                    else:
+                        occupied = False
+
+        self._x = x
+        self._y = y
+
+
 class Snake:
     def __init__(self, x: int, y: int) -> None:
         self._occupies = [(x, y)]
         self._direction = tuple[int, int]
-        self._grow = 0
 
-        self.set_direction(RIGHT)
+        self._grow = 0
+        self._last_direction = RIGHT
+        self.set_direction(self._last_direction)
+
         self.grow(3)
 
     def get_head(self) -> Tuple[int, int]:
@@ -70,9 +108,9 @@ class Snake:
 
         for ind, part in enumerate(self._occupies):
             if ind != 0:
-                color = SNAKE_BODY
+                color = SNAKE_BODY_COLOR
             else:
-                color = SNAKE_HEAD
+                color = SNAKE_HEAD_COLOR
 
             pygame.draw.rect(surface,
                              color,
@@ -84,7 +122,9 @@ class Snake:
 
     def set_direction(self, direction: tuple[int, int]) -> None:
         if direction == RIGHT or direction == LEFT or direction == UP or direction == DOWN:
-            self._direction = direction
+            if self._last_direction != (direction[0] * -1, direction[1] * -1):
+                self._direction = direction
+
         else:
             raise Exception('Wrong direction')
 
@@ -112,6 +152,7 @@ class Snake:
         else:
             self._grow = 0
 
+        self._last_direction = self._direction
         return True
 
 
@@ -137,8 +178,10 @@ def main():
         for y in range(height)
         if x == 0 or x == width - 1 or y == 0 or y == height - 1
     ]
-
+    cherry = Cherry()
     snake = Snake(width // 2, height // 2)
+
+    cherry.move(snake, wall, width, height)
     # TODO zusätzliche Steine im innern erstellen
     # wall.append(Brick(7,7))
 
@@ -171,8 +214,12 @@ def main():
         running = snake.step(wall)
         print(running)
         snake.draw(screen)
+        cherry.draw(screen)
 
         # TODO: Ueberpruefen, ob die Kirsche erreicht wurde, falls ja, wachsen und Kirsche bewegen.
+        if cherry.occupies(snake.get_head()[0], snake.get_head()[1]):
+            snake.grow(1)
+            cherry.move(snake, wall, width, height)
 
         # TODO: Kirsche zeichnen
 
