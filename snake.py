@@ -1,5 +1,5 @@
 import random
-from typing import Tuple, Type
+from typing import Tuple
 
 import pygame
 
@@ -59,15 +59,14 @@ class Snake:
         # _occupies stores the positions (x and y coordinates) of every snake part
         self._occupies = [(x, y)]
         # _direction stores the direction the snake is headed, represented by x and y vectors. e.g. (1,0) means right
-        self._direction = tuple[int, int]
-        # _grow stores whether the snake still needs to grow a part because it ate a cherry.
+        self._direction = RIGHT
+        # _grow stores whether the snake still needs to grow aa part because it ate a cherry.
         self._grow = 0
         # _last_direction stores the direction before the last direction change
         # to ensure the snake doesn't turn 180° at once because this would lead to a crash that is not intended
-        self._last_direction = RIGHT
+        self._last_direction = self._direction
 
-        # _direction and grow are now set by the corresponding method.
-        self.set_direction(self._last_direction)
+        # grow is now set by the corresponding method.
         self.grow(3)
 
     # get_head returns the position (x and y) of the head of the snake.
@@ -158,12 +157,13 @@ class Cherry(Item):
                              TILE_SIZE]
                             )
 
-    def move(self, snake: Type[Snake], wall: list[tuple[int, int]], width: int, height: int, ) -> None:
+    def move(self, snake: Snake, wall: list[Brick], width: int, height: int, ) -> None:
         occupied = True
         # The loop generates random positions on the board
         # as long as the cherry can't be placed on the generated position.
         # If it can be placed there, because the position isn't occupied by a snake part or a brick
         # it sets this position as new position.
+        x, y = 0, 0
         while occupied:
             x = random.randrange(0, width)
             y = random.randrange(0, height)
@@ -253,7 +253,7 @@ def main() -> None:
     font = pygame.font.SysFont('ressources/Elronmonospace.ttf', TILE_SIZE * 3)
 
     # render loosing message
-    message = font.render("You Loose!", 5, (200, 50, 50))
+    message = font.render("You Loose!", True, (200, 50, 50))
     message_w = message.get_width()
     message_h = message.get_height()
 
