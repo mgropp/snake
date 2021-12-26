@@ -1,7 +1,7 @@
-import pygame
 import random
-from typing import Optional, List, Tuple, Type
-import time
+from typing import Tuple, Type
+
+import pygame
 
 TILE_SIZE = 30
 
@@ -249,6 +249,23 @@ def main() -> None:
 
         pygame.display.flip()
         clock.tick(speed)
+
+    font = pygame.font.SysFont('ressources/Elronmonospace.ttf', TILE_SIZE*3)
+
+    # render text
+    message = font.render("You Loose!", 5, (200, 50, 50))
+    message_w = message.get_width()
+    message_h = message.get_height()
+    screen.blit(message, (TILE_SIZE * width / 2 - message_w / 2, TILE_SIZE * height / 2 - message_h / 2))
+    pygame.display.flip()
+    # If the game is finished the game doesn't quit imediately. It waits for the user to close the window.
+    waiting_to_quit = True
+    while waiting_to_quit:
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                # Spiel beenden
+                waiting_to_quit = False
+                break
 
     pygame.display.quit()
     pygame.quit()
